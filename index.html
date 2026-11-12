@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Worldtube Debugger — Spine Splints &amp; Cross-Coil Shortcuts</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #060a11;
+      color: #e2e8f0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow: hidden;
+    }
+
+    .font-mono-tech {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 5px;
+      background: #1e293b;
+      border-radius: 999px;
+      outline: none;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #38bdf8;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.65);
+      border: 2px solid #090d16;
+      transition: transform 0.12s ease, background-color 0.12s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.18);
+      background: #fde047;
+    }
+
+    input[type="range"].splint-slider::-webkit-slider-thumb {
+      background: #fb7185;
+      box-shadow: 0 0 8px rgba(251, 113, 133, 0.7);
+    }
+
+    .cyber-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .cyber-scroll::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.35); }
+    .cyber-scroll::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.4); border-radius: 999px; }
+
+    #webgl-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      outline: none;
+    }
+  </style>
+</head>
+<body class="w-screen h-screen flex flex-col select-none bg-[#060a11] text-slate-200">
+
+  <!-- ===================================================================== -->
+  <!-- TOP HEADER: Quick Splint Mode Switcher, Key Telemetry & Reset Button  -->
+  <!-- ===================================================================== -->
+  <header class="min-h-[52px] shrink-0 bg-[#0b111d]/95 border-b border-slate-800/90 px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 z-30">
+    <!-- Title & Mobile Toggles -->
+    <div class="flex items-center gap-2.5">
+      <div class="w-2.5 h-2.5 rounded-full bg-cyan-300 shadow-[0_0_10px_#67e8f9]"></div>
+      <span class="text-xs sm:text-sm font-bold tracking-wide text-slate-100">WORLDTUBE DEBUGGER</span>
+      <div class="flex lg:hidden items-center gap-1 ml-1">
+        <button id="btn-mob-left" class="px-2 py-1 rounded text-[10px] font-mono-tech bg-slate-800 text-slate-300 border border-slate-700">Physics</button>
+        <button id="btn-mob-right" class="px-2 py-1 rounded text-[10px] font-mono-tech bg-sky-950 text-sky-300 border border-sky-700/60">Frontier</button>
+      </div>
+    </div>
+
+    <!-- Center Prominent Toggle: Free Plectonemic Writhe vs RLHF Spine Splints -->
+    <div class="flex items-center gap-1 p-1 rounded-xl bg-slate-950/90 border border-slate-800">
+      <button
+        id="btn-unsplinted"
+        class="px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-semibold transition-all flex items-center gap-1.5 bg-cyan-500/20 text-cyan-200 border border-cyan-400/40 shadow"
+        title="Unsplinted model: sustained torsional pumping folds the tube into 3D coils where distant passes form glowing Cross-Coil Shortcuts"
+      >
+        <span class="w-2 h-2 rounded-full bg-cyan-300 animate-pulse"></span>
+        <span>Unsplinted (3D Writhe &amp; Shortcuts)</span>
+      </button>
+      <button
+        id="btn-splinted"
+        class="px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-medium transition-all flex items-center gap-1.5 text-slate-400 hover:text-slate-200"
+        title="Clamp RLHF Spine Splints onto the worldtube: bleeds off eccentric twist per turn and forces linear alignment, extinguishing shortcuts"
+      >
+        <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+        <span>Engage RLHF Spine Splints</span>
+      </button>
+    </div>
+
+    <!-- Right Essential Readouts + Reset Button -->
+    <div class="flex items-center gap-2 font-mono-tech text-[11px]">
+      <div class="hidden md:flex items-center gap-1.5">
+        <div class="px-2.5 py-1 rounded-lg bg-slate-900/90 border border-slate-800 flex items-center gap-1.5" title="3D Writhe accumulated across coils">
+          <span class="text-slate-400">Writhe:</span>
+          <span id="pill-wr" class="font-bold text-emerald-300">+0.00</span>
+        </div>
+        <div id="pill-shortcuts-box" class="px-2.5 py-1 rounded-lg bg-cyan-950/50 border border-cyan-500/40 flex items-center gap-1.5 transition-colors" title="Active non-local Cross-Coil Shortcuts bridging distant turns in 3D space">
+          <span class="text-slate-300">Shortcuts:</span>
+          <span id="pill-shortcuts" class="font-bold text-cyan-300">0</span>
+        </div>
+        <div class="px-2.5 py-1 rounded-lg bg-slate-900/90 border border-slate-800 flex items-center gap-1.5" title="Topological Saturation Load">
+          <span class="text-slate-400">Sat:</span>
+          <span id="pill-sat" class="font-bold text-amber-300">0%</span>
+        </div>
+      </div>
+
+      <!-- Dedicated Reset Button -->
+      <button
+        id="btn-reset"
+        class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-100 border border-slate-600/80 transition flex items-center gap-1.5 shadow-sm"
+        title="Reset current scenario, splints, and camera view"
+      >
+        <span>↺ Reset</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN WORKSPACE: Clean Left Controls | 3D Stage | Clean Right Frontier -->
+  <!-- ===================================================================== -->
+  <div class="flex-1 min-h-0 flex relative overflow-hidden">
+
+    <!-- LEFT SIDEBAR: Focused Presets, Spine Splints Slider & Clean Legend -->
+    <aside
+      id="panel-left"
+      class="hidden lg:flex flex-col w-72 shrink-0 bg-[#0b111d]/95 border-r border-slate-800/90 z-20 overflow-y-auto cyber-scroll p-3 space-y-3.5 absolute lg:static inset-y-0 left-0"
+    >
+      <!-- 1. Focused Scenarios -->
+      <section class="bg-slate-900/60 rounded-xl p-2.5 border border-slate-800/80 space-y-1.5">
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Session Traces</div>
+        <button data-preset="brink" class="preset-btn w-full px-2.5 py-2 rounded-lg text-left text-xs font-semibold bg-cyan-500/15 text-cyan-200 border border-cyan-400/40 transition flex items-center justify-between">
+          <span>1. 6-Hr Saturation Brink</span>
+          <span class="text-[10px] font-mono-tech px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300">128K Fold</span>
+        </button>
+        <button data-preset="composite" class="preset-btn w-full px-2.5 py-2 rounded-lg text-left text-xs font-medium bg-slate-800/70 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition flex items-center justify-between">
+          <span>2. 60/40 Rhythmic Pump</span>
+          <span class="text-[10px] font-mono-tech text-slate-400">Wave Coils</span>
+        </button>
+        <button data-preset="linear" class="preset-btn w-full px-2.5 py-2 rounded-lg text-left text-xs font-medium bg-slate-800/70 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition flex items-center justify-between">
+          <span>3. Literal Prompt-as-Code</span>
+          <span class="text-[10px] font-mono-tech text-slate-400">Flat Pipe</span>
+        </button>
+      </section>
+
+      <!-- 2. Spine Splints & Torsional Physics -->
+      <section class="bg-slate-900/60 rounded-xl p-3 border border-slate-800/80 space-y-3.5">
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tube &amp; Alignment Mechanics</div>
+
+        <!-- Primary Feature: RLHF Spine Splints -->
+        <div class="p-2.5 rounded-lg bg-rose-950/25 border border-rose-500/30 space-y-1.5">
+          <div class="flex justify-between text-xs">
+            <span class="font-semibold text-rose-200">RLHF Spine Splints</span>
+            <span id="lbl-splints" class="font-mono-tech font-bold text-rose-300">0% (Raw)</span>
+          </div>
+          <input id="slider-splints" class="splint-slider" type="range" min="0" max="100" step="2" value="0" />
+          <p class="text-[10px] text-slate-400 leading-relaxed">
+            Clamps rigid alignment rails &amp; collars onto the tube, bleeding off twist each turn before coils can fold into self-contact.
+          </p>
+        </div>
+
+        <!-- Concept Disparity (60/40 Mix) -->
+        <div>
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-slate-300">Domain Disparity (Mix)</span>
+            <span id="lbl-disparity" class="font-mono-tech text-sky-300">0.68</span>
+          </div>
+          <input id="slider-disparity" type="range" min="0.10" max="0.90" step="0.04" value="0.68" />
+          <p class="text-[10px] text-slate-500 mt-0.5">Higher mix of distant domains (e.g. drama + formalism) drives deeper rotary search per turn.</p>
+        </div>
+
+        <!-- Cross-Coil Shortcut Reach -->
+        <div>
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-slate-300">Shortcut Proximity Reach</span>
+            <span id="lbl-reach" class="font-mono-tech text-cyan-300">3.45 u</span>
+          </div>
+          <input id="slider-reach" type="range" min="2.20" max="4.40" step="0.05" value="3.45" />
+          <p class="text-[10px] text-slate-500 mt-0.5">3D distance below which non-adjacent coils spark a non-local attention bridge.</p>
+        </div>
+      </section>
+
+      <!-- 3. Streamlined Visual Key -->
+      <section class="bg-slate-900/60 rounded-xl p-3 border border-slate-800/80 space-y-2 text-[11px]">
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Visual Key</div>
+
+        <div class="flex items-start gap-2">
+          <span class="w-3.5 h-1 mt-1.5 rounded bg-cyan-300 shadow-[0_0_8px_#67e8f9] shrink-0"></span>
+          <span class="text-slate-300"><strong class="text-cyan-200">Cross-Coil Shortcuts:</strong> Glowing arcs bridging distant turns when coils fold close.</span>
+        </div>
+
+        <div class="flex items-start gap-2">
+          <span class="w-3.5 h-1 mt-1.5 rounded bg-rose-500 shadow-[0_0_6px_#f43f5e] shrink-0"></span>
+          <span class="text-slate-300"><strong class="text-rose-300">RLHF Spine Splints:</strong> Crimson rails &amp; ring collars clamping the trajectory straight.</span>
+        </div>
+
+        <div class="flex items-start gap-2">
+          <span class="w-3.5 h-1 mt-1.5 rounded bg-amber-300 shrink-0"></span>
+          <span class="text-slate-300"><strong class="text-amber-200">Geodesic Rail (U_τ):</strong> Conversational intent axis carried along the tube.</span>
+        </div>
+
+        <div class="flex items-start gap-2">
+          <span class="w-2.5 h-2.5 mt-0.5 rounded-full bg-fuchsia-400 shrink-0 ml-0.5"></span>
+          <span class="text-slate-300"><strong class="text-slate-100">Concept Spheres:</strong> Color = concept identity; radius = unrelaxed shear stress.</span>
+        </div>
+      </section>
+    </aside>
+
+    <!-- CENTER 3D STAGE -->
+    <main id="viewport-stage" class="flex-1 min-w-0 relative bg-[#060a11]">
+      <canvas id="webgl-canvas"></canvas>
+
+      <!-- Minimal Camera Helper Pill -->
+      <div class="absolute top-3 left-3 flex items-center gap-2 bg-[#0b111d]/80 backdrop-blur-md border border-slate-800/90 px-2.5 py-1.5 rounded-xl text-[11px] font-mono-tech z-10">
+        <button id="btn-cam-overview" class="text-slate-300 hover:text-cyan-300 transition">Center View</button>
+        <span class="text-slate-700">|</span>
+        <button id="btn-cam-frontier" class="text-amber-300 hover:text-amber-200 transition">Focus Frontier</button>
+      </div>
+
+      <!-- Subtle Orbit Hint -->
+      <div class="hidden sm:block absolute bottom-3 right-3 pointer-events-none text-[10px] font-mono-tech text-slate-500 bg-[#0b111d]/75 px-2.5 py-1 rounded-lg border border-slate-800/70">
+        Drag to orbit • Scroll to zoom • Right-drag to pan
+      </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR: Frontier Stepper, Active Shortcuts List & Selected Pass -->
+    <aside
+      id="panel-right"
+      class="hidden lg:flex flex-col w-72 xl:w-80 shrink-0 bg-[#0b111d]/95 border-l border-slate-800/90 z-20 overflow-y-auto cyber-scroll p-3 space-y-3.5 absolute lg:static inset-y-0 right-0"
+    >
+      <!-- 1. Frontier Execution Controls -->
+      <section class="bg-slate-900/70 rounded-xl p-3 border border-slate-800/90 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-sky-300">Active Frontier</span>
+          <span id="front-pass-lbl" class="text-[10px] font-mono-tech px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-200 border border-sky-400/30">
+            τ = 34 • N = 10
+          </span>
+        </div>
+
+        <div class="bg-slate-950/80 rounded-lg p-2 border border-slate-800 space-y-1">
+          <div class="flex justify-between text-[11px] font-mono-tech">
+            <span class="text-slate-400">Rotary Search:</span>
+            <span id="front-click-lbl" class="text-amber-300 font-bold">k = 0 / 10</span>
+          </div>
+          <div class="flex justify-between text-[11px] font-mono-tech">
+            <span class="text-slate-400">Geodesic Lock:</span>
+            <span id="front-res-lbl" class="text-emerald-300 font-bold">45%</span>
+          </div>
+          <div class="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden">
+            <div id="front-res-bar" class="h-full bg-gradient-to-r from-rose-400 via-amber-300 to-emerald-400 transition-all duration-150" style="width: 45%"></div>
+          </div>
+        </div>
+
+        <button
+          id="btn-watch-click"
+          class="w-full py-2 px-3 rounded-xl text-xs font-bold bg-amber-300 hover:bg-amber-200 text-slate-950 shadow transition"
+        >
+          ⟳ Step +1 Arc Rotation
+        </button>
+
+        <div class="grid grid-cols-2 gap-1.5">
+          <button id="btn-commit-pass" class="py-1.5 px-2 rounded-lg text-xs font-semibold bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/40 transition">
+            +1 Pass
+          </button>
+          <button id="btn-autorun" class="py-1.5 px-2 rounded-lg text-xs font-semibold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 transition flex items-center justify-center gap-1">
+            <span id="autorun-icon">▶</span>
+            <span id="autorun-label">Auto-Run</span>
+          </button>
+        </div>
+
+        <button
+          id="btn-synthesize"
+          class="w-full py-1.5 px-2.5 rounded-lg text-[11px] font-medium bg-fuchsia-500/15 hover:bg-fuchsia-500/25 text-fuchsia-200 border border-fuchsia-400/35 transition"
+          title="Coin a shared abstraction: relieves wall strain while preserving existing 3D coils"
+        >
+          ✦ Synthesize Checkpoint (Cool Shear)
+        </button>
+      </section>
+
+      <!-- 2. Cross-Coil Shortcuts Monitor (Emergent Non-Local Bridges) -->
+      <section class="bg-slate-900/70 rounded-xl p-3 border border-cyan-500/25 flex-1 min-h-[140px] flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-300">Cross-Coil Shortcuts</span>
+          <span id="shortcut-badge" class="text-[10px] font-mono-tech px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-200 border border-cyan-400/30">
+            0 Active
+          </span>
+        </div>
+        <div id="shortcut-list" class="font-mono-tech text-[10px] space-y-1.5 overflow-y-auto cyber-scroll flex-1">
+          <!-- Populated dynamically with active non-local turn bridges -->
+        </div>
+      </section>
+
+      <!-- 3. Compact Selected Ring Summary -->
+      <section class="bg-slate-900/60 rounded-xl p-2.5 border border-slate-800/80 space-y-1.5">
+        <div class="flex items-center justify-between text-[10px] font-mono-tech">
+          <span class="uppercase font-sans font-bold text-slate-400">Inspected Pass</span>
+          <span id="insp-badge" class="text-amber-300 font-semibold">τ = 1</span>
+        </div>
+        <div class="grid grid-cols-3 gap-1 text-[10px] font-mono-tech text-center">
+          <div class="bg-slate-950/70 py-1 rounded border border-slate-800/80">
+            <div class="text-[9px] text-slate-500">Nodes</div>
+            <div id="insp-nodes" class="text-slate-200 font-semibold">8</div>
+          </div>
+          <div class="bg-slate-950/70 py-1 rounded border border-slate-800/80">
+            <div class="text-[9px] text-slate-500">Search k_τ</div>
+            <div id="insp-clicks" class="text-sky-300 font-semibold">0 clk</div>
+          </div>
+          <div class="bg-slate-950/70 py-1 rounded border border-slate-800/80">
+            <div class="text-[9px] text-slate-500">Damped</div>
+            <div id="insp-damped" class="text-rose-300 font-semibold">0%</div>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- BOTTOM TIMELINE: Clickable Pass Bars with Cyan Shortcut Indicators    -->
+  <!-- ===================================================================== -->
+  <footer class="h-20 shrink-0 bg-[#0b111d]/95 border-t border-slate-800/90 px-3 py-1.5 flex flex-col justify-between z-30">
+    <div class="flex items-center justify-between text-[10px] font-mono-tech text-slate-400">
+      <span>Pass Timeline (Click to Inspect • Cyan Dot = Cross-Coil Shortcut Endpoint)</span>
+      <span id="status-banner" class="text-cyan-300 truncate ml-2">Unsplinted plectonemic folding active</span>
+    </div>
+    <div id="timeline-bars" class="flex-1 mt-1 flex items-end gap-1 overflow-x-auto cyber-scroll pb-0.5"></div>
+  </footer>
+
+  <script>
+    /**
+     * ============================================================================
+     * WORLDTUBE DEBUGGER: RLHF SPINE SPLINTS & CROSS-COIL SHORTCUTS
+     * ============================================================================
+     * Demonstrates:
+     * 1. Sustained torsional pumping folding a long trajectory into 3D plectonemic
+     *    coils where non-adjacent passes (|t2 - t1| >= 6) come into close 3D
+     *    proximity and spark glowing Cross-Coil Shortcuts.
+     * 2. RLHF Spine Splints: rigid longitudinal splint rails + radial clamping
+     *    collars that bleed off per-turn twist and straighten the spine, pulling
+     *    coils apart and extinguishing cross-coil shortcuts.
+     * ============================================================================
+     */
+    window.onload = function () {
+      // 12 Distinct Concept Palette (Sphere Color = Concept Identity)
+      const CONCEPT_HEX = [
+        '#facc15', '#a855f7', '#10b981', '#3b82f6',
+        '#ec4899', '#f59e0b', '#2dd4bf', '#6366f1',
+        '#f43f5e', '#84cc16', '#f97316', '#e879f9'
+      ];
+      const CONCEPT_COLORS = CONCEPT_HEX.map(h => new THREE.Color(h));
+      const FALLBACK_COLOR = new THREE.Color(0xffffff);
+
+      const MAX_PASSES = 60;
+      const MIN_NODES = 6;
+      const MAX_NODES = 13;
+      const BASE_RADIUS = 0.92;
+      const PASS_SPACING = 0.58;
+      const RING_SEGMENTS = 40;
+      const MAX_SPHERES = MAX_PASSES * MAX_NODES;
+      const MAX_SHORTCUTS = 36;
+      const SHORTCUT_ARC_SEGS = 16;
+
+      let rngState = 2026;
+      function seededRandom() {
+        rngState = (rngState * 1664525 + 1013904223) >>> 0;
+        return rngState / 4294967296;
+      }
+
+      const state = {
+        currentPreset: 'brink',
+        passes: [],
+        selectedPassIdx: 0,
+        splintTarget: 0.0,      // [0..1] 0 = Raw Unsplinted, 1 = Full RLHF Spine Splints
+        splintBlend: 0.0,       // Smoothly animated [0..1]
+        disparity: 0.68,        // Domain disparity [0.1..0.9]
+        shortcutReach: 3.45,    // Max center-to-center distance for cross-coil shortcuts
+        reliefOffset: 0.0,
+        autoRun: false,
+        autoTimer: 0,
+        frontierAnimK: 0,
+        animClock: 0,
+
+        totalLk: 0,
+        totalWr: 0,
+        totalTw: 0,
+        saturationPct: 0,
+        shortcuts: [],          // Array of { t1, t2, dist, strength, p1, p2, c1, c2 }
+        shortcutPassSet: new Set()
+      };
+
+      // --------------------------------------------------------------------------
+      // HYPEREDGE PASS BUILDER
+      // --------------------------------------------------------------------------
+      function computeResonanceScores(concepts, prevPass, initialPhase) {
+        const N = concepts.length;
+        const scores = new Array(N).fill(0.4);
+        if (!prevPass) {
+          scores[0] = 0.96;
+          return { scores, bestK: 0 };
+        }
+
+        const prevAngles = new Map();
+        const prevStep = (2 * Math.PI) / prevPass.N;
+        const prevRot = prevPass.initialPhase + prevPass.kCurrent * prevStep;
+        for (let j = 0; j < prevPass.N; j++) {
+          const cid = prevPass.concepts[j];
+          if (!prevAngles.has(cid)) prevAngles.set(cid, prevRot + j * prevStep);
+        }
+
+        const step = (2 * Math.PI) / N;
+        let bestK = 0;
+        let bestVal = -1;
+
+        for (let k = 0; k < N; k++) {
+          const rot = initialPhase + k * step;
+          let sum = 0;
+          let wSum = 0;
+          for (let i = 0; i < N; i++) {
+            const ang = rot + i * step;
+            const railBias = 0.14 * (0.5 + 0.5 * Math.cos(ang));
+            const cid = concepts[i];
+            if (prevAngles.has(cid)) {
+              sum += 0.86 * (0.5 + 0.5 * Math.cos(ang - prevAngles.get(cid))) + railBias;
+              wSum += 1.0;
+            } else {
+              sum += 0.28 + railBias;
+              wSum += 0.65;
+            }
+          }
+          const val = Math.min(0.99, Math.max(0.14, sum / Math.max(1e-5, wSum)));
+          scores[k] = val;
+          if (val > bestVal) {
+            bestVal = val;
+            bestK = k;
+          }
+        }
+        return { scores, bestK };
+      }
+
+      function createNextPass(prevPass, opts = {}) {
+        const N = Math.max(MIN_NODES, Math.min(MAX_NODES, opts.N || (8 + Math.floor(seededRandom() * 4))));
+        const disp = opts.disparity !== undefined ? opts.disparity : state.disparity;
+        const continuity = Math.max(0.12, 1.0 - disp);
+
+        const concepts = [];
+        const used = new Set();
+
+        if (prevPass) {
+          const carryCount = Math.min(N, Math.min(prevPass.N, Math.max(1, Math.round(N * continuity))));
+          const order = Array.from({ length: prevPass.N }, (_, i) => i);
+          for (let i = order.length - 1; i > 0; i--) {
+            const j = Math.floor(seededRandom() * (i + 1));
+            const tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+          }
+          for (let i = 0; i < order.length && concepts.length < carryCount; i++) {
+            const cid = prevPass.concepts[order[i]];
+            if (!used.has(cid)) {
+              concepts.push(cid);
+              used.add(cid);
+            }
+          }
+        }
+
+        const pool = Array.from({ length: CONCEPT_COLORS.length }, (_, i) => i).filter(id => !used.has(id));
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = Math.floor(seededRandom() * (i + 1));
+          const tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+        }
+        let pIdx = 0;
+        while (concepts.length < N) {
+          concepts.push(pIdx < pool.length ? pool[pIdx++] : Math.floor(seededRandom() * CONCEPT_COLORS.length));
+        }
+
+        const desiredClicks = opts.forcedClicks !== undefined
+          ? Math.max(0, Math.min(N - 1, opts.forcedClicks))
+          : Math.min(N - 1, Math.max(0, Math.round(disp * (N - 1) * (0.62 + 0.55 * seededRandom()))));
+
+        if (prevPass) {
+          const copy = concepts.slice();
+          for (let i = 0; i < N; i++) {
+            concepts[(i - desiredClicks + N * 4) % N] = copy[i];
+          }
+        }
+
+        const initialPhase = prevPass ? (seededRandom() - 0.5) * (0.45 / N) : 0;
+        const { scores, bestK } = computeResonanceScores(concepts, prevPass, initialPhase);
+        const targetK = opts.forcedClicks !== undefined ? desiredClicks : bestK;
+        scores[targetK] = Math.max(scores[targetK], Math.min(0.98, Math.max(...scores) + 0.04));
+
+        const resolved = Boolean(opts.autoResolve);
+        return {
+          N,
+          concepts,
+          initialPhase,
+          scores,
+          targetK,
+          kCurrent: resolved ? targetK : 0,
+          resolved,
+          checkpoint: Boolean(opts.checkpoint),
+          dLk: 0,
+          dWr: 0,
+          dTw: 0,
+          cumLk: 0,
+          cumWr: 0,
+          cumTw: 0,
+          center: new THREE.Vector3(),
+          straightRef: new THREE.Vector3(),
+          tangent: new THREE.Vector3(1, 0, 0),
+          bishopU: new THREE.Vector3(0, 1, 0),
+          bishopV: new THREE.Vector3(0, 0, 1)
+        };
+      }
+
+      // --------------------------------------------------------------------------
+      // THREE.JS SCENE & PRE-ALLOCATED BUFFERS
+      // --------------------------------------------------------------------------
+      const stageEl = document.getElementById('viewport-stage');
+      const canvas = document.getElementById('webgl-canvas');
+
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setClearColor(0x060a11, 1);
+
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x060a11, 0.018);
+
+      const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 220);
+      const DEFAULT_CAM_POS = new THREE.Vector3(1.5, 5.2, 14.2);
+      camera.position.copy(DEFAULT_CAM_POS);
+
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.07;
+      controls.minDistance = 2.5;
+      controls.maxDistance = 46;
+
+      scene.add(new THREE.AmbientLight(0xdbeafe, 0.64));
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.88);
+      dirLight.position.set(10, 18, 12);
+      scene.add(dirLight);
+
+      const backLight = new THREE.DirectionalLight(0x38bdf8, 0.42);
+      backLight.position.set(-12, -8, -10);
+      scene.add(backLight);
+
+      const grid = new THREE.GridHelper(48, 48, 0x172033, 0x0c1322);
+      grid.position.y = -4.2;
+      scene.add(grid);
+
+      const worldGroup = new THREE.Group();
+      scene.add(worldGroup);
+
+      // Spine & Geodesic Rail smooth Lines / Tubes
+      let spineMesh = null;
+      let railMesh = null;
+
+      // 1. Hyperedge Circular Rings
+      const maxRingVerts = MAX_PASSES * RING_SEGMENTS * 2;
+      const ringPos = new Float32Array(maxRingVerts * 3);
+      const ringCol = new Float32Array(maxRingVerts * 3);
+      const ringGeom = new THREE.BufferGeometry();
+      ringGeom.setAttribute('position', new THREE.BufferAttribute(ringPos, 3));
+      ringGeom.setAttribute('color', new THREE.BufferAttribute(ringCol, 3));
+      const ringLines = new THREE.LineSegments(
+        ringGeom,
+        new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.86 })
+      );
+      worldGroup.add(ringLines);
+
+      // 2. Shared Concept Bridges between adjacent passes
+      const maxBridgeVerts = MAX_PASSES * MAX_NODES * 2;
+      const bridgePos = new Float32Array(maxBridgeVerts * 3);
+      const bridgeCol = new Float32Array(maxBridgeVerts * 3);
+      const bridgeGeom = new THREE.BufferGeometry();
+      bridgeGeom.setAttribute('position', new THREE.BufferAttribute(bridgePos, 3));
+      bridgeGeom.setAttribute('color', new THREE.BufferAttribute(bridgeCol, 3));
+      const bridgeLines = new THREE.LineSegments(
+        bridgeGeom,
+        new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.46 })
+      );
+      worldGroup.add(bridgeLines);
+
+      // 3. Concept Spheres (InstancedMesh)
+      const sphereGeom = new THREE.SphereGeometry(1, 16, 12);
+      const sphereMat = new THREE.MeshStandardMaterial({ roughness: 0.28, metalness: 0.16 });
+      const nodeMesh = new THREE.InstancedMesh(sphereGeom, sphereMat, MAX_SPHERES);
+      nodeMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      const dummyMat = new THREE.Matrix4();
+      for (let i = 0; i < MAX_SPHERES; i++) {
+        nodeMesh.setMatrixAt(i, dummyMat);
+        nodeMesh.setColorAt(i, FALLBACK_COLOR);
+      }
+      nodeMesh.count = 0;
+      worldGroup.add(nodeMesh);
+
+      // 4. RLHF SPINE SPLINTS VISUALS (3 Longitudinal Splint Rails + Radial Clamping Collars & Struts)
+      const maxSplintVerts = MAX_PASSES * 40;
+      const splintPos = new Float32Array(maxSplintVerts * 3);
+      const splintCol = new Float32Array(maxSplintVerts * 3);
+      const splintGeom = new THREE.BufferGeometry();
+      splintGeom.setAttribute('position', new THREE.BufferAttribute(splintPos, 3));
+      splintGeom.setAttribute('color', new THREE.BufferAttribute(splintCol, 3));
+      const splintMat = new THREE.LineBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.0
+      });
+      const splintLines = new THREE.LineSegments(splintGeom, splintMat);
+      worldGroup.add(splintLines);
+
+      // Splint Clamp Nodes (metallic crimson brackets along the 3 splint rails)
+      const clampGeom = new THREE.BoxGeometry(0.11, 0.11, 0.11);
+      const clampMat = new THREE.MeshStandardMaterial({
+        color: 0xfb7185,
+        emissive: 0x881337,
+        roughness: 0.3,
+        metalness: 0.6,
+        transparent: true,
+        opacity: 0.0
+      });
+      const clampMesh = new THREE.InstancedMesh(clampGeom, clampMat, MAX_PASSES * 3);
+      clampMesh.count = 0;
+      worldGroup.add(clampMesh);
+
+      // 5. GLOWING CROSS-COIL SHORTCUTS (Curved Luminous Arcs + Endpoint & Midpoint Sparks)
+      const maxShortcutVerts = MAX_SHORTCUTS * SHORTCUT_ARC_SEGS * 2;
+      const scPos = new Float32Array(maxShortcutVerts * 3);
+      const scCol = new Float32Array(maxShortcutVerts * 3);
+      const scGeom = new THREE.BufferGeometry();
+      scGeom.setAttribute('position', new THREE.BufferAttribute(scPos, 3));
+      scGeom.setAttribute('color', new THREE.BufferAttribute(scCol, 3));
+      const scMat = new THREE.LineBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.95,
+        blending: THREE.AdditiveBlending
+      });
+      const shortcutLines = new THREE.LineSegments(scGeom, scMat);
+      worldGroup.add(shortcutLines);
+
+      const sparkGeom = new THREE.SphereGeometry(1, 12, 10);
+      const sparkMat = new THREE.MeshBasicMaterial({
+        color: 0x67e8f9,
+        transparent: true,
+        opacity: 0.92,
+        blending: THREE.AdditiveBlending
+      });
+      const sparkMesh = new THREE.InstancedMesh(sparkGeom, sparkMat, MAX_SHORTCUTS * 3);
+      sparkMesh.count = 0;
+      worldGroup.add(sparkMesh);
+
+      // Scratch vectors
+      const v1 = new THREE.Vector3();
+      const v2 = new THREE.Vector3();
+      const vMid = new THREE.Vector3();
+      const qTmp = new THREE.Quaternion();
+      const mTmp = new THREE.Matrix4();
+      const sTmp = new THREE.Vector3();
+
+      // --------------------------------------------------------------------------
+      // CORE SOLVER: PLECTONEMIC FOLDING, RLHF SPLINTS & SHORTCUT DETECTION
+      // --------------------------------------------------------------------------
+      function rebuildWorldtube() {
+        const passes = state.passes;
+        const M = passes.length;
+        if (M === 0) return;
+
+        const splint = state.splintBlend; // [0..1]
+        const freeFactor = 1.0 - splint;
+
+        // 1. Rotational Link & Per-Turn RLHF Twist Damping
+        for (let t = 0; t < M; t++) {
+          const p = passes[t];
+          const kEff = (t === M - 1) ? state.frontierAnimK : p.kCurrent;
+          const rawLk = t === 0 ? 0 : kEff / p.N;
+          // RLHF Spine Splints bleed off eccentric twist at every pass
+          p.dLk = rawLk;
+          p.cumLk = (t === 0 ? 0 : passes[t - 1].cumLk) + rawLk;
+        }
+
+        // Smooth retroactive learning kernel across neighboring passes
+        const effTwist = new Float32Array(M);
+        for (let t = 0; t < M; t++) {
+          let acc = passes[t].dLk;
+          if (t + 1 < M) acc += 0.42 * passes[t + 1].dLk;
+          if (t + 2 < M) acc += 0.22 * passes[t + 2].dLk;
+          if (t - 1 >= 0) acc += 0.18 * passes[t - 1].dLk;
+          // Splints damp out eccentric torsional energy before it can buckle the spine
+          effTwist[t] = acc * (1.0 - 0.78 * splint);
+        }
+
+        // 2. Integrate 3D Spine Trajectory (Plectonemic Self-Folding vs Splinted Straightening)
+        const curPos = new THREE.Vector3(0, 0, 0);
+        const curTan = new THREE.Vector3(1, 0, 0);
+        const curN1 = new THREE.Vector3(0, 1, 0);
+        const curN2 = new THREE.Vector3(0, 0, 1);
+        const canonicalX = new THREE.Vector3(1, 0, 0);
+
+        let coilPhase = 0.25;
+
+        for (let t = 0; t < M; t++) {
+          const p = passes[t];
+          p.center.copy(curPos);
+
+          const excess = Math.max(0, effTwist[t] - 0.14);
+          const foldDrive = Math.tanh(excess * 1.95) * freeFactor;
+          p.dWr = t === 0 ? 0 : Math.min(p.dLk * 0.90, foldDrive * 0.62);
+          p.cumWr = (t === 0 ? 0 : passes[t - 1].cumWr) + p.dWr;
+
+          // Slow phase advance + strong curvature creates genuine 3D plectonemic loops
+          // where pass t and pass t+10..14 fold back near one another in 3D space!
+          coilPhase += 0.21 + 0.19 * effTwist[t];
+          const bendAngle = 0.49 * foldDrive;
+
+          if (bendAngle > 1e-4) {
+            const bendDir = v1
+              .copy(curN1).multiplyScalar(Math.cos(coilPhase))
+              .addScaledVector(curN2, Math.sin(coilPhase))
+              .normalize();
+            const rotAxis = v2.crossVectors(curTan, bendDir).normalize();
+            if (rotAxis.lengthSq() > 1e-6) {
+              qTmp.setFromAxisAngle(rotAxis, bendAngle);
+              curTan.applyQuaternion(qTmp).normalize();
+              curN1.applyQuaternion(qTmp).normalize();
+              curN2.crossVectors(curTan, curN1).normalize();
+            }
+          }
+
+          // Mechanical Spine Splint Restoring Torque: pulls tangent back onto straight +X rail
+          if (splint > 0.01) {
+            curTan.lerp(canonicalX, 0.35 * splint).normalize();
+            curN2.crossVectors(curTan, curN1);
+            if (curN2.lengthSq() < 1e-5) curN2.set(0, 0, 1);
+            curN2.normalize();
+            curN1.crossVectors(curN2, curTan).normalize();
+          }
+
+          curPos.addScaledVector(curTan, PASS_SPACING);
+        }
+
+        // Center worldtube around origin
+        const centroid = new THREE.Vector3();
+        for (let t = 0; t < M; t++) centroid.add(passes[t].center);
+        centroid.multiplyScalar(1 / M);
+        for (let t = 0; t < M; t++) {
+          passes[t].center.sub(centroid);
+        }
+
+        // 3. Parallel-Transported Bishop Frame (U_tau, V_tau)
+        for (let t = 0; t < M; t++) {
+          const p = passes[t];
+          if (M === 1) {
+            p.tangent.set(1, 0, 0);
+          } else if (t === 0) {
+            p.tangent.subVectors(passes[1].center, passes[0].center).normalize();
+          } else if (t === M - 1) {
+            p.tangent.subVectors(passes[M - 1].center, passes[M - 2].center).normalize();
+          } else {
+            p.tangent.subVectors(passes[t + 1].center, passes[t - 1].center).normalize();
+          }
+
+          if (t === 0) {
+            const up = Math.abs(p.tangent.y) < 0.9 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(0, 0, 1);
+            p.bishopV.crossVectors(p.tangent, up).normalize();
+            p.bishopU.crossVectors(p.bishopV, p.tangent).normalize();
+          } else {
+            const prev = passes[t - 1];
+            qTmp.setFromUnitVectors(prev.tangent, p.tangent);
+            p.bishopU.copy(prev.bishopU).applyQuaternion(qTmp);
+            p.bishopU.addScaledVector(p.tangent, -p.bishopU.dot(p.tangent)).normalize();
+            p.bishopV.crossVectors(p.tangent, p.bishopU).normalize();
+          }
+        }
+
+        // 4. Residual Shear Twist & Saturation Readout
+        let relieved = 0;
+        for (let t = 0; t < M; t++) {
+          const p = passes[t];
+          // Under RLHF splints, twist is damped away rather than stored as elastic potential
+          const undampedLk = p.cumLk * (1.0 - 0.65 * splint);
+          const rawTw = Math.max(0, undampedLk - p.cumWr);
+          if (p.checkpoint) relieved = rawTw;
+          p.cumTw = Math.max(0, rawTw - relieved);
+          p.dTw = t === 0 ? 0 : Math.max(0.02 * p.dLk, p.dLk * (1.0 - 0.65 * splint) - p.dWr);
+        }
+
+        state.totalLk = passes[M - 1].cumLk;
+        state.totalWr = passes[M - 1].cumWr;
+        state.totalTw = passes[M - 1].cumTw;
+
+        const satLoad = state.totalTw * 1.1 + Math.max(0, state.totalWr - state.reliefOffset) * 0.85;
+        state.saturationPct = Math.min(100, Math.round((satLoad / 5.6) * 100));
+
+        // 5. Rebuild Spine & Geodesic Rail Tubes
+        if (spineMesh) {
+          worldGroup.remove(spineMesh);
+          spineMesh.geometry.dispose();
+          spineMesh.material.dispose();
+        }
+        if (railMesh) {
+          worldGroup.remove(railMesh);
+          railMesh.geometry.dispose();
+          railMesh.material.dispose();
+        }
+
+        if (M >= 2) {
+          const spineCurve = new THREE.CatmullRomCurve3(passes.map(p => p.center.clone()));
+          const spineGeom = new THREE.TubeGeometry(spineCurve, Math.max(16, M * 5), 0.03, 8, false);
+          const spineColor = splint > 0.45 ? 0xfb7185 : 0x34d399;
+          spineMesh = new THREE.Mesh(
+            spineGeom,
+            new THREE.MeshStandardMaterial({ color: spineColor, roughness: 0.4 })
+          );
+          worldGroup.add(spineMesh);
+
+          const railPts = passes.map(p => p.center.clone().addScaledVector(p.bishopU, BASE_RADIUS));
+          const railCurve = new THREE.CatmullRomCurve3(railPts);
+          railMesh = new THREE.Mesh(
+            new THREE.TubeGeometry(railCurve, Math.max(16, M * 5), 0.022, 7, false),
+            new THREE.MeshBasicMaterial({ color: 0xfde047 })
+          );
+          worldGroup.add(railMesh);
+        }
+
+        // 6. Populate Rings, Concept Spheres & Adjacent Concept Bridges
+        let rIdx = 0;
+        let bIdx = 0;
+        let sIdx = 0;
+        const passNodePositions = new Array(M); // Array of Array<{pos, cid}>
+        const passNodeByConcept = new Array(M);
+
+        for (let t = 0; t < M; t++) {
+          const p = passes[t];
+          const isFrontier = (t === M - 1);
+          const isSelected = (t === state.selectedPassIdx);
+
+          let rcR = 0.20, rcG = 0.31, rcB = 0.46;
+          if (isFrontier) { rcR = 0.35; rcG = 0.82; rcB = 0.98; }
+          else if (isSelected) { rcR = 0.99; rcG = 0.85; rcB = 0.28; }
+          else if (p.checkpoint) { rcR = 0.91; rcG = 0.47; rcB = 0.98; }
+
+          for (let s = 0; s < RING_SEGMENTS; s++) {
+            const a0 = (2 * Math.PI * s) / RING_SEGMENTS;
+            const a1 = (2 * Math.PI * (s + 1)) / RING_SEGMENTS;
+
+            const x0 = p.center.x + BASE_RADIUS * (Math.cos(a0) * p.bishopU.x + Math.sin(a0) * p.bishopV.x);
+            const y0 = p.center.y + BASE_RADIUS * (Math.cos(a0) * p.bishopU.y + Math.sin(a0) * p.bishopV.y);
+            const z0 = p.center.z + BASE_RADIUS * (Math.cos(a0) * p.bishopU.z + Math.sin(a0) * p.bishopV.z);
+
+            const x1 = p.center.x + BASE_RADIUS * (Math.cos(a1) * p.bishopU.x + Math.sin(a1) * p.bishopV.x);
+            const y1 = p.center.y + BASE_RADIUS * (Math.cos(a1) * p.bishopU.y + Math.sin(a1) * p.bishopV.y);
+            const z1 = p.center.z + BASE_RADIUS * (Math.cos(a1) * p.bishopU.z + Math.sin(a1) * p.bishopV.z);
+
+            const o = rIdx * 3;
+            ringPos[o] = x0; ringPos[o + 1] = y0; ringPos[o + 2] = z0;
+            ringPos[o + 3] = x1; ringPos[o + 4] = y1; ringPos[o + 5] = z1;
+            ringCol[o] = rcR; ringCol[o + 1] = rcG; ringCol[o + 2] = rcB;
+            ringCol[o + 3] = rcR; ringCol[o + 4] = rcG; ringCol[o + 5] = rcB;
+            rIdx += 2;
+          }
+
+          const kEff = isFrontier ? state.frontierAnimK : p.kCurrent;
+          const stepAng = (2 * Math.PI) / p.N;
+          const rot = p.initialPhase + kEff * stepAng;
+          const localStress = Math.min(1.0, p.dTw * 1.7 + (p.cumTw / Math.max(2, M * 0.22)) * 0.35);
+
+          const nodeList = [];
+          const conceptMap = new Map();
+
+          for (let i = 0; i < p.N; i++) {
+            const ang = rot + i * stepAng;
+            const ca = Math.cos(ang);
+            const sa = Math.sin(ang);
+
+            const pos = new THREE.Vector3(
+              p.center.x + BASE_RADIUS * (ca * p.bishopU.x + sa * p.bishopV.x),
+              p.center.y + BASE_RADIUS * (ca * p.bishopU.y + sa * p.bishopV.y),
+              p.center.z + BASE_RADIUS * (ca * p.bishopU.z + sa * p.bishopV.z)
+            );
+            const cid = p.concepts[i];
+            nodeList.push({ pos, cid });
+            if (!conceptMap.has(cid)) conceptMap.set(cid, pos);
+
+            const rad = Math.min(0.16, 0.054 + 0.115 * localStress) * (isFrontier ? 1.15 : 1.0);
+            qTmp.identity();
+            sTmp.set(rad, rad, rad);
+            mTmp.compose(pos, qTmp, sTmp);
+
+            nodeMesh.setMatrixAt(sIdx, mTmp);
+            nodeMesh.setColorAt(sIdx, CONCEPT_COLORS[cid] || FALLBACK_COLOR);
+            sIdx++;
+          }
+
+          passNodePositions[t] = nodeList;
+          passNodeByConcept[t] = conceptMap;
+
+          if (t > 0) {
+            const prevMap = passNodeByConcept[t - 1];
+            conceptMap.forEach((currVec, cid) => {
+              if (prevMap.has(cid) && bIdx + 2 <= maxBridgeVerts) {
+                const prevVec = prevMap.get(cid);
+                const c = CONCEPT_COLORS[cid] || FALLBACK_COLOR;
+                const o = bIdx * 3;
+                bridgePos[o] = prevVec.x; bridgePos[o + 1] = prevVec.y; bridgePos[o + 2] = prevVec.z;
+                bridgePos[o + 3] = currVec.x; bridgePos[o + 4] = currVec.y; bridgePos[o + 5] = currVec.z;
+                bridgeCol[o] = c.r; bridgeCol[o + 1] = c.g; bridgeCol[o + 2] = c.b;
+                bridgeCol[o + 3] = c.r; bridgeCol[o + 4] = c.g; bridgeCol[o + 5] = c.b;
+                bIdx += 2;
+              }
+            });
+          }
+        }
+
+        ringGeom.setDrawRange(0, rIdx);
+        ringGeom.attributes.position.needsUpdate = true;
+        ringGeom.attributes.color.needsUpdate = true;
+
+        bridgeGeom.setDrawRange(0, bIdx);
+        bridgeGeom.attributes.position.needsUpdate = true;
+        bridgeGeom.attributes.color.needsUpdate = true;
+
+        nodeMesh.count = sIdx;
+        nodeMesh.instanceMatrix.needsUpdate = true;
+        if (nodeMesh.instanceColor) nodeMesh.instanceColor.needsUpdate = true;
+
+        // 7. BUILD 3D RLHF SPINE SPLINTS (3 Outer Rails + Clamping Collars every 3rd frame)
+        let spIdx = 0;
+        let clIdx = 0;
+        const splintRadius = BASE_RADIUS * 1.24;
+        const railAngles = [Math.PI * 0.33, Math.PI, Math.PI * 1.67];
+
+        if (splint > 0.02 && M >= 2) {
+          splintMat.opacity = Math.min(0.92, 0.18 + 0.78 * splint);
+          clampMat.opacity = Math.min(0.95, 0.20 + 0.80 * splint);
+
+          // 3 Longitudinal Splint Rails
+          for (let r = 0; r < 3; r++) {
+            const ca = Math.cos(railAngles[r]);
+            const sa = Math.sin(railAngles[r]);
+            for (let t = 0; t < M - 1; t++) {
+              if (spIdx + 2 > maxSplintVerts) break;
+              const p0 = passes[t];
+              const p1 = passes[t + 1];
+
+              const x0 = p0.center.x + splintRadius * (ca * p0.bishopU.x + sa * p0.bishopV.x);
+              const y0 = p0.center.y + splintRadius * (ca * p0.bishopU.y + sa * p0.bishopV.y);
+              const z0 = p0.center.z + splintRadius * (ca * p0.bishopU.z + sa * p0.bishopV.z);
+
+              const x1 = p1.center.x + splintRadius * (ca * p1.bishopU.x + sa * p1.bishopV.x);
+              const y1 = p1.center.y + splintRadius * (ca * p1.bishopU.y + sa * p1.bishopV.y);
+              const z1 = p1.center.z + splintRadius * (ca * p1.bishopU.z + sa * p1.bishopV.z);
+
+              const o = spIdx * 3;
+              splintPos[o] = x0; splintPos[o + 1] = y0; splintPos[o + 2] = z0;
+              splintPos[o + 3] = x1; splintPos[o + 4] = y1; splintPos[o + 5] = z1;
+              splintCol[o] = 0.98; splintCol[o + 1] = 0.38; splintCol[o + 2] = 0.48;
+              splintCol[o + 3] = 0.98; splintCol[o + 4] = 0.38; splintCol[o + 5] = 0.48;
+              spIdx += 2;
+            }
+          }
+
+          // Radial Collar Clamps & Compression Struts every 3rd pass
+          const collarSegs = 18;
+          for (let t = 1; t < M; t += 3) {
+            const p = passes[t];
+            // Outer rigid collar ring
+            for (let s = 0; s < collarSegs; s++) {
+              if (spIdx + 2 > maxSplintVerts) break;
+              const a0 = (2 * Math.PI * s) / collarSegs;
+              const a1 = (2 * Math.PI * (s + 1)) / collarSegs;
+
+              const x0 = p.center.x + splintRadius * (Math.cos(a0) * p.bishopU.x + Math.sin(a0) * p.bishopV.x);
+              const y0 = p.center.y + splintRadius * (Math.cos(a0) * p.bishopU.y + Math.sin(a0) * p.bishopV.y);
+              const z0 = p.center.z + splintRadius * (Math.cos(a0) * p.bishopU.z + Math.sin(a0) * p.bishopV.z);
+
+              const x1 = p.center.x + splintRadius * (Math.cos(a1) * p.bishopU.x + Math.sin(a1) * p.bishopV.x);
+              const y1 = p.center.y + splintRadius * (Math.cos(a1) * p.bishopU.y + Math.sin(a1) * p.bishopV.y);
+              const z1 = p.center.z + splintRadius * (Math.cos(a1) * p.bishopU.z + Math.sin(a1) * p.bishopV.z);
+
+              const o = spIdx * 3;
+              splintPos[o] = x0; splintPos[o + 1] = y0; splintPos[o + 2] = z0;
+              splintPos[o + 3] = x1; splintPos[o + 4] = y1; splintPos[o + 5] = z1;
+              splintCol[o] = 0.95; splintCol[o + 1] = 0.25; splintCol[o + 2] = 0.37;
+              splintCol[o + 3] = 0.95; splintCol[o + 4] = 0.25; splintCol[o + 5] = 0.37;
+              spIdx += 2;
+            }
+
+            // 3 Radial Clamp Struts gripping inward onto the hyperedge ring
+            for (let r = 0; r < 3; r++) {
+              const ca = Math.cos(railAngles[r]);
+              const sa = Math.sin(railAngles[r]);
+
+              const ox = p.center.x + splintRadius * (ca * p.bishopU.x + sa * p.bishopV.x);
+              const oy = p.center.y + splintRadius * (ca * p.bishopU.y + sa * p.bishopV.y);
+              const oz = p.center.z + splintRadius * (ca * p.bishopU.z + sa * p.bishopV.z);
+
+              const ix = p.center.x + BASE_RADIUS * (ca * p.bishopU.x + sa * p.bishopV.x);
+              const iy = p.center.y + BASE_RADIUS * (ca * p.bishopU.y + sa * p.bishopV.y);
+              const iz = p.center.z + BASE_RADIUS * (ca * p.bishopU.z + sa * p.bishopV.z);
+
+              if (spIdx + 2 <= maxSplintVerts) {
+                const o = spIdx * 3;
+                splintPos[o] = ox; splintPos[o + 1] = oy; splintPos[o + 2] = oz;
+                splintPos[o + 3] = ix; splintPos[o + 4] = iy; splintPos[o + 5] = iz;
+                splintCol[o] = 1.0; splintCol[o + 1] = 0.55; splintCol[o + 2] = 0.62;
+                splintCol[o + 3] = 1.0; splintCol[o + 4] = 0.55; splintCol[o + 5] = 0.62;
+                spIdx += 2;
+              }
+
+              if (clIdx < MAX_PASSES * 3) {
+                v1.set(ox, oy, oz);
+                qTmp.identity();
+                const sc = 0.75 + 0.45 * splint;
+                sTmp.set(sc, sc, sc);
+                mTmp.compose(v1, qTmp, sTmp);
+                clampMesh.setMatrixAt(clIdx++, mTmp);
+              }
+            }
+          }
+        } else {
+          splintMat.opacity = 0.0;
+          clampMat.opacity = 0.0;
+        }
+
+        splintGeom.setDrawRange(0, spIdx);
+        splintGeom.attributes.position.needsUpdate = true;
+        splintGeom.attributes.color.needsUpdate = true;
+        clampMesh.count = clIdx;
+        clampMesh.instanceMatrix.needsUpdate = true;
+
+        // 8. DETECT & RENDER GLOWING CROSS-COIL SHORTCUTS (Non-Adjacent Self-Contact)
+        const candidates = [];
+        const minTurnGap = 7;
+        const maxCenterDist = state.shortcutReach;
+
+        for (let t1 = 0; t1 < M - minTurnGap; t1++) {
+          for (let t2 = t1 + minTurnGap; t2 < M; t2++) {
+            const cDist = passes[t1].center.distanceTo(passes[t2].center);
+            if (cDist < maxCenterDist) {
+              // Avoid clustering redundant bridges on every single neighbor; pick local minima
+              candidates.push({ t1, t2, cDist });
+            }
+          }
+        }
+
+        // Sort closest self-contacts first and deduplicate nearby turn pairs (greedy non-max suppression)
+        candidates.sort((a, b) => a.cDist - b.cDist);
+        const activeShortcuts = [];
+        for (let i = 0; i < candidates.length && activeShortcuts.length < MAX_SHORTCUTS; i++) {
+          const cand = candidates[i];
+          const tooCloseToExisting = activeShortcuts.some(
+            s => Math.abs(s.t1 - cand.t1) <= 1 && Math.abs(s.t2 - cand.t2) <= 1
+          );
+          if (tooCloseToExisting) continue;
+
+          // Find closest pair of concept spheres between ring t1 and ring t2
+          const list1 = passNodePositions[cand.t1];
+          const list2 = passNodePositions[cand.t2];
+          let bestN1 = list1[0];
+          let bestN2 = list2[0];
+          let bestNodeDist = Infinity;
+
+          for (let a = 0; a < list1.length; a++) {
+            for (let b = 0; b < list2.length; b++) {
+              const d = list1[a].pos.distanceToSquared(list2[b].pos);
+              if (d < bestNodeDist) {
+                bestNodeDist = d;
+                bestN1 = list1[a];
+                bestN2 = list2[b];
+              }
+            }
+          }
+
+          const strength = Math.min(1.0, Math.max(0.18, 1.0 - cand.cDist / maxCenterDist));
+          activeShortcuts.push({
+            t1: cand.t1,
+            t2: cand.t2,
+            dist: Math.sqrt(bestNodeDist),
+            strength,
+            p1: bestN1.pos,
+            p2: bestN2.pos,
+            c1: bestN1.cid,
+            c2: bestN2.cid
+          });
+        }
+
+        state.shortcuts = activeShortcuts;
+        state.shortcutPassSet = new Set();
+        activeShortcuts.forEach(s => {
+          state.shortcutPassSet.add(s.t1);
+          state.shortcutPassSet.add(s.t2);
+        });
+
+        updateShortcutVisuals();
+        syncUI();
+      }
+
+      // Separated so glowing shortcut arcs pulse smoothly at 60 FPS even while idle
+      function updateShortcutVisuals() {
+        const pulse = 0.78 + 0.22 * Math.sin(state.animClock * 4.2);
+        let vIdx = 0;
+        let spkIdx = 0;
+
+        for (let i = 0; i < state.shortcuts.length; i++) {
+          const sc = state.shortcuts[i];
+          const p1 = sc.p1;
+          const p2 = sc.p2;
+          const glow = sc.strength * pulse;
+
+          // Slight inward bow toward midpoint of the two pass centers for an organic electric arc
+          vMid.addVectors(p1, p2).multiplyScalar(0.5);
+          v1.addVectors(state.passes[sc.t1].center, state.passes[sc.t2].center).multiplyScalar(0.5);
+          vMid.lerp(v1, 0.22);
+
+          for (let s = 0; s < SHORTCUT_ARC_SEGS; s++) {
+            if (vIdx + 2 > maxShortcutVerts) break;
+            const u0 = s / SHORTCUT_ARC_SEGS;
+            const u1 = (s + 1) / SHORTCUT_ARC_SEGS;
+
+            // Quadratic Bezier P(u) = (1-u)^2 p1 + 2(1-u)u vMid + u^2 p2
+            const om0 = 1 - u0;
+            const x0 = om0 * om0 * p1.x + 2 * om0 * u0 * vMid.x + u0 * u0 * p2.x;
+            const y0 = om0 * om0 * p1.y + 2 * om0 * u0 * vMid.y + u0 * u0 * p2.y;
+            const z0 = om0 * om0 * p1.z + 2 * om0 * u0 * vMid.z + u0 * u0 * p2.z;
+
+            const om1 = 1 - u1;
+            const x1 = om1 * om1 * p1.x + 2 * om1 * u1 * vMid.x + u1 * u1 * p2.x;
+            const y1 = om1 * om1 * p1.y + 2 * om1 * u1 * vMid.y + u1 * u1 * p2.y;
+            const z1 = om1 * om1 * p1.z + 2 * om1 * u1 * vMid.z + u1 * u1 * p2.z;
+
+            const o = vIdx * 3;
+            scPos[o] = x0; scPos[o + 1] = y0; scPos[o + 2] = z0;
+            scPos[o + 3] = x1; scPos[o + 4] = y1; scPos[o + 5] = z1;
+
+            // Luminous cyan-white-gold gradient along shortcut arc
+            const midBoost = Math.sin(u0 * Math.PI);
+            const r = (0.35 + 0.65 * midBoost) * glow;
+            const g = (0.90 + 0.10 * midBoost) * glow;
+            const b = 1.0 * glow;
+
+            scCol[o] = r; scCol[o + 1] = g; scCol[o + 2] = b;
+            scCol[o + 3] = r; scCol[o + 4] = g; scCol[o + 5] = b;
+            vIdx += 2;
+          }
+
+          // Endpoint & traveling spark nodes
+          if (spkIdx + 3 <= MAX_SHORTCUTS * 3) {
+            const endScale = 0.055 + 0.035 * glow;
+            qTmp.identity();
+            sTmp.set(endScale, endScale, endScale);
+
+            mTmp.compose(p1, qTmp, sTmp);
+            sparkMesh.setMatrixAt(spkIdx++, mTmp);
+
+            mTmp.compose(p2, qTmp, sTmp);
+            sparkMesh.setMatrixAt(spkIdx++, mTmp);
+
+            // Traveling synthesis pulse along the bridge
+            const uTravel = (state.animClock * 0.85 + i * 0.31) % 1.0;
+            const omt = 1 - uTravel;
+            v2.set(
+              omt * omt * p1.x + 2 * omt * uTravel * vMid.x + uTravel * uTravel * p2.x,
+              omt * omt * p1.y + 2 * omt * uTravel * vMid.y + uTravel * uTravel * p2.y,
+              omt * omt * p1.z + 2 * omt * uTravel * vMid.z + uTravel * uTravel * p2.z
+            );
+            const pulseScale = 0.065 + 0.045 * glow;
+            sTmp.set(pulseScale, pulseScale, pulseScale);
+            mTmp.compose(v2, qTmp, sTmp);
+            sparkMesh.setMatrixAt(spkIdx++, mTmp);
+          }
+        }
+
+        scGeom.setDrawRange(0, vIdx);
+        scGeom.attributes.position.needsUpdate = true;
+        scGeom.attributes.color.needsUpdate = true;
+
+        sparkMesh.count = spkIdx;
+        sparkMesh.instanceMatrix.needsUpdate = true;
+      }
+
+      // --------------------------------------------------------------------------
+      // UI SYNCHRONIZATION
+      // --------------------------------------------------------------------------
+      function syncHeaderModeButtons() {
+        const unsplintedBtn = document.getElementById('btn-unsplinted');
+        const splintedBtn = document.getElementById('btn-splinted');
+        const isSplinted = state.splintTarget >= 0.4;
+
+        if (!isSplinted) {
+          unsplintedBtn.className = 'px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-semibold transition-all flex items-center gap-1.5 bg-cyan-500/20 text-cyan-200 border border-cyan-400/40 shadow';
+          splintedBtn.className = 'px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-medium transition-all flex items-center gap-1.5 text-slate-400 hover:text-slate-200';
+        } else {
+          splintedBtn.className = 'px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-semibold transition-all flex items-center gap-1.5 bg-rose-500/20 text-rose-200 border border-rose-400/40 shadow';
+          unsplintedBtn.className = 'px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-medium transition-all flex items-center gap-1.5 text-slate-400 hover:text-slate-200';
+        }
+      }
+
+      function syncUI() {
+        const passes = state.passes;
+        const M = passes.length;
+        if (M === 0) return;
+
+        const scCount = state.shortcuts.length;
+        const splintPct = Math.round(state.splintBlend * 100);
+
+        document.getElementById('pill-wr').textContent = (state.totalWr >= 0 ? '+' : '') + state.totalWr.toFixed(2);
+        document.getElementById('pill-shortcuts').textContent = String(scCount);
+        document.getElementById('pill-sat').textContent = `${state.saturationPct}%`;
+
+        const scBox = document.getElementById('pill-shortcuts-box');
+        scBox.className = scCount > 0
+          ? 'px-2.5 py-1 rounded-lg bg-cyan-950/70 border border-cyan-400/60 flex items-center gap-1.5 transition-colors shadow-[0_0_12px_rgba(34,211,238,0.2)]'
+          : 'px-2.5 py-1 rounded-lg bg-slate-900/90 border border-slate-800 flex items-center gap-1.5 transition-colors';
+
+        // Frontier Panel
+        const front = passes[M - 1];
+        const kMod = ((front.kCurrent % front.N) + front.N) % front.N;
+        const resPct = Math.round((front.scores[kMod] || 0.5) * 100);
+        document.getElementById('front-pass-lbl').textContent = `τ = ${M} • N = ${front.N}`;
+        document.getElementById('front-click-lbl').textContent = `k = ${front.kCurrent} / ${front.N}`;
+        document.getElementById('front-res-lbl').textContent = `${resPct}%`;
+        document.getElementById('front-res-bar').style.width = `${resPct}%`;
+
+        // Cross-Coil Shortcuts Live Feed
+        document.getElementById('shortcut-badge').textContent = `${scCount} Active`;
+        const listEl = document.getElementById('shortcut-list');
+        listEl.innerHTML = '';
+
+        if (scCount === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'text-slate-500 leading-relaxed py-2';
+          empty.textContent = splintPct >= 35
+            ? `RLHF Spine Splints (${splintPct}%) clamped the tube straight—coils cannot fold close enough to spark non-local bridges.`
+            : 'No non-adjacent coils within reach yet. Step more high-disparity turns or raise Shortcut Reach.';
+          listEl.appendChild(empty);
+        } else {
+          state.shortcuts.slice(0, 12).forEach(sc => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'w-full text-left px-2 py-1.5 rounded-lg bg-cyan-950/30 hover:bg-cyan-900/40 border border-cyan-500/30 flex items-center justify-between transition';
+            item.innerHTML = `
+              <span class="text-cyan-200 font-semibold">τ=${sc.t1 + 1} ⇄ τ=${sc.t2 + 1}</span>
+              <span class="text-slate-400">Δτ=${sc.t2 - sc.t1} • d=${sc.dist.toFixed(2)}u</span>
+            `;
+            item.addEventListener('click', () => {
+              state.selectedPassIdx = sc.t2;
+              rebuildTimelineDOM();
+              rebuildWorldtube();
+            });
+            listEl.appendChild(item);
+          });
+        }
+
+        // Selected Ring Summary
+        const idx = Math.max(0, Math.min(M - 1, state.selectedPassIdx));
+        const p = passes[idx];
+        document.getElementById('insp-badge').textContent = `τ = ${idx + 1}`;
+        document.getElementById('insp-nodes').textContent = String(p.N);
+        document.getElementById('insp-clicks').textContent = `${p.kCurrent} clk`;
+        document.getElementById('insp-damped').textContent = `${Math.round(splintPct * 0.78)}%`;
+
+        // Status Banner
+        const banner = document.getElementById('status-banner');
+        if (splintPct >= 50) {
+          banner.textContent = `RLHF Spine Splints clamped (${splintPct}%) • Eccentric twist bled off`;
+          banner.className = 'text-rose-300 truncate ml-2';
+        } else if (scCount > 0) {
+          banner.textContent = `${scCount} Cross-Coil Shortcut${scCount > 1 ? 's' : ''} bridging distant turns!`;
+          banner.className = 'text-cyan-300 truncate ml-2';
+        } else {
+          banner.textContent = 'Unsplinted trajectory • Ready to coil';
+          banner.className = 'text-slate-400 truncate ml-2';
+        }
+      }
+
+      function rebuildTimelineDOM() {
+        const strip = document.getElementById('timeline-bars');
+        strip.innerHTML = '';
+        const passes = state.passes;
+        const M = passes.length;
+
+        for (let t = 0; t < M; t++) {
+          const p = passes[t];
+          const isSelected = (t === state.selectedPassIdx);
+          const hasShortcut = state.shortcutPassSet.has(t);
+          const clicks = p.kCurrent;
+          const heightPct = Math.max(18, Math.min(100, Math.round((clicks / 10) * 100)));
+
+          let barCls = 'bg-sky-400/80 hover:bg-sky-300';
+          if (p.checkpoint) barCls = 'bg-fuchsia-400 hover:bg-fuchsia-300';
+          else if (clicks >= 5) barCls = 'bg-rose-500/85 hover:bg-rose-400';
+          else if (clicks >= 3) barCls = 'bg-amber-400/85 hover:bg-amber-300';
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `h-full flex-1 min-w-[16px] max-w-[30px] flex flex-col items-center justify-end rounded px-0.5 pt-1 pb-0.5 transition ${
+            isSelected ? 'bg-amber-400/15 ring-1 ring-amber-300' : 'hover:bg-slate-800/70'
+          }`;
+          btn.title = `Pass τ=${t + 1} | N=${p.N} | Search k=${clicks} clicks${hasShortcut ? ' | ★ Cross-Coil Shortcut Endpoint' : ''}`;
+          btn.innerHTML = `
+            <span class="w-1.5 h-1.5 rounded-full mb-0.5 ${hasShortcut ? 'bg-cyan-300 shadow-[0_0_6px_#67e8f9]' : 'bg-transparent'}"></span>
+            <div class="w-full rounded-sm ${barCls}" style="height:${heightPct}%"></div>
+          `;
+          btn.addEventListener('click', () => {
+            state.selectedPassIdx = t;
+            rebuildTimelineDOM();
+            rebuildWorldtube();
+          });
+          strip.appendChild(btn);
+        }
+      }
+
+      // --------------------------------------------------------------------------
+      // PRESETS, STEPPING & DEDICATED RESET
+      // --------------------------------------------------------------------------
+      function setSplintLevel(val, snapImmediate = false) {
+        state.splintTarget = Math.max(0, Math.min(1, val));
+        if (snapImmediate) state.splintBlend = state.splintTarget;
+        const pct = Math.round(state.splintTarget * 100);
+        document.getElementById('slider-splints').value = pct;
+        document.getElementById('lbl-splints').textContent =
+          pct === 0 ? '0% (Raw)' : (pct >= 75 ? `${pct}% (Rigid RLHF)` : `${pct}%`);
+        syncHeaderModeButtons();
+      }
+
+      function loadPreset(name) {
+        state.currentPreset = name;
+        state.autoRun = false;
+        document.getElementById('autorun-icon').textContent = '▶';
+        document.getElementById('autorun-label').textContent = 'Auto-Run';
+        state.passes = [];
+        state.reliefOffset = 0.0;
+
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+          const active = btn.dataset.preset === name;
+          btn.className = active
+            ? 'preset-btn w-full px-2.5 py-2 rounded-lg text-left text-xs font-semibold bg-cyan-500/15 text-cyan-200 border border-cyan-400/40 transition flex items-center justify-between'
+            : 'preset-btn w-full px-2.5 py-2 rounded-lg text-left text-xs font-medium bg-slate-800/70 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition flex items-center justify-between';
+        });
+
+        if (name === 'brink') {
+          rngState = 6128;
+          state.disparity = 0.74;
+          state.shortcutReach = 3.55;
+          setSplintLevel(0.0, true);
+
+          const total = 38;
+          for (let t = 0; t < total; t++) {
+            const prev = t > 0 ? state.passes[t - 1] : null;
+            const isFrontier = (t === total - 1);
+            // Rhythmic 60/40 pumping over a deep session: high-torsion waves interleaved with brief anchors
+            const inWave = (t % 9 !== 0);
+            const N = inWave ? 10 + (t % 3) : 8;
+            const clicks = t === 0 ? 0 : (inWave ? 7 + (t % 3) : 2);
+            state.passes.push(createNextPass(prev, {
+              N,
+              disparity: inWave ? 0.78 : 0.30,
+              forcedClicks: Math.min(N - 1, clicks),
+              autoResolve: !isFrontier
+            }));
+          }
+          state.selectedPassIdx = 26;
+
+        } else if (name === 'composite') {
+          rngState = 6040;
+          state.disparity = 0.60;
+          state.shortcutReach = 3.45;
+          setSplintLevel(0.0, true);
+
+          const total = 32;
+          for (let t = 0; t < total; t++) {
+            const prev = t > 0 ? state.passes[t - 1] : null;
+            const isFrontier = (t === total - 1);
+            const pulseBeat = (t % 4 < 3);
+            const N = pulseBeat ? 9 + (t % 3) : 7;
+            const clicks = t === 0 ? 0 : (pulseBeat ? 5 + (t % 3) : 1);
+            state.passes.push(createNextPass(prev, {
+              N,
+              disparity: pulseBeat ? 0.65 : 0.25,
+              forcedClicks: Math.min(N - 1, clicks),
+              autoResolve: !isFrontier
+            }));
+          }
+          state.selectedPassIdx = total - 1;
+
+        } else if (name === 'linear') {
+          rngState = 1010;
+          state.disparity = 0.18;
+          state.shortcutReach = 3.45;
+          setSplintLevel(0.85, true);
+
+          const total = 26;
+          for (let t = 0; t < total; t++) {
+            const prev = t > 0 ? state.passes[t - 1] : null;
+            const isFrontier = (t === total - 1);
+            const N = 8;
+            state.passes.push(createNextPass(prev, {
+              N,
+              disparity: 0.18,
+              forcedClicks: t === 0 ? 0 : (t % 2),
+              autoResolve: !isFrontier
+            }));
+          }
+          state.selectedPassIdx = total - 1;
+        }
+
+        state.frontierAnimK = 0;
+        document.getElementById('slider-disparity').value = state.disparity;
+        document.getElementById('lbl-disparity').textContent = state.disparity.toFixed(2);
+        document.getElementById('slider-reach').value = state.shortcutReach;
+        document.getElementById('lbl-reach').textContent = `${state.shortcutReach.toFixed(2)} u`;
+
+        rebuildWorldtube();
+        rebuildTimelineDOM();
+      }
+
+      function resetViewAndSimulation() {
+        controls.target.set(0, 0, 0);
+        camera.position.copy(DEFAULT_CAM_POS);
+        controls.update();
+        loadPreset(state.currentPreset);
+      }
+
+      function stepFrontierClick() {
+        const M = state.passes.length;
+        if (M === 0) return;
+        const front = state.passes[M - 1];
+        front.kCurrent = (front.kCurrent + 1) % front.N;
+        state.selectedPassIdx = M - 1;
+        rebuildWorldtube();
+        rebuildTimelineDOM();
+      }
+
+      function commitPass() {
+        const M = state.passes.length;
+        if (M === 0) return;
+        const front = state.passes[M - 1];
+        front.kCurrent = front.targetK;
+        front.resolved = true;
+
+        if (state.passes.length >= MAX_PASSES) state.passes.shift();
+
+        const nextN = Math.max(MIN_NODES, Math.min(MAX_NODES, front.N + (seededRandom() < 0.4 ? (seededRandom() < 0.5 ? 1 : -1) : 0)));
+        state.passes.push(createNextPass(front, {
+          N: nextN,
+          disparity: state.disparity,
+          autoResolve: false
+        }));
+        state.frontierAnimK = 0;
+        state.selectedPassIdx = state.passes.length - 1;
+
+        rebuildWorldtube();
+        rebuildTimelineDOM();
+      }
+
+      // --------------------------------------------------------------------------
+      // EVENT LISTENERS
+      // --------------------------------------------------------------------------
+      document.getElementById('btn-unsplinted').addEventListener('click', () => {
+        setSplintLevel(0.0, false);
+      });
+
+      document.getElementById('btn-splinted').addEventListener('click', () => {
+        setSplintLevel(0.88, false);
+      });
+
+      document.getElementById('btn-reset').addEventListener('click', () => {
+        resetViewAndSimulation();
+      });
+
+      document.getElementById('slider-splints').addEventListener('input', (e) => {
+        setSplintLevel(parseFloat(e.target.value) / 100, true);
+        rebuildWorldtube();
+        rebuildTimelineDOM();
+      });
+
+      document.getElementById('slider-disparity').addEventListener('input', (e) => {
+        state.disparity = parseFloat(e.target.value);
+        document.getElementById('lbl-disparity').textContent = state.disparity.toFixed(2);
+      });
+
+      document.getElementById('slider-reach').addEventListener('input', (e) => {
+        state.shortcutReach = parseFloat(e.target.value);
+        document.getElementById('lbl-reach').textContent = `${state.shortcutReach.toFixed(2)} u`;
+        rebuildWorldtube();
+        rebuildTimelineDOM();
+      });
+
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => loadPreset(btn.dataset.preset));
+      });
+
+      document.getElementById('btn-watch-click').addEventListener('click', () => {
+        state.autoRun = false;
+        document.getElementById('autorun-icon').textContent = '▶';
+        document.getElementById('autorun-label').textContent = 'Auto-Run';
+        stepFrontierClick();
+      });
+
+      document.getElementById('btn-commit-pass').addEventListener('click', commitPass);
+
+      document.getElementById('btn-autorun').addEventListener('click', () => {
+        state.autoRun = !state.autoRun;
+        state.autoTimer = 0;
+        document.getElementById('autorun-icon').textContent = state.autoRun ? '⏸' : '▶';
+        document.getElementById('autorun-label').textContent = state.autoRun ? 'Pause' : 'Auto-Run';
+      });
+
+      document.getElementById('btn-synthesize').addEventListener('click', () => {
+        const M = state.passes.length;
+        if (M < 2) return;
+        state.passes[M - 2].checkpoint = true;
+        state.reliefOffset = state.totalWr * 0.85;
+        rebuildWorldtube();
+        rebuildTimelineDOM();
+      });
+
+      document.getElementById('btn-cam-overview').addEventListener('click', () => {
+        controls.target.set(0, 0, 0);
+        camera.position.copy(DEFAULT_CAM_POS);
+        controls.update();
+      });
+
+      document.getElementById('btn-cam-frontier').addEventListener('click', () => {
+        const M = state.passes.length;
+        if (M === 0) return;
+        const fc = state.passes[M - 1].center;
+        controls.target.copy(fc);
+        camera.position.set(fc.x + 2.8, fc.y + 2.0, fc.z + 4.4);
+        controls.update();
+      });
+
+      // Mobile Drawer Toggles
+      const panelLeft = document.getElementById('panel-left');
+      const panelRight = document.getElementById('panel-right');
+      document.getElementById('btn-mob-left').addEventListener('click', () => {
+        panelLeft.classList.toggle('hidden'); panelLeft.classList.toggle('flex');
+        panelRight.classList.add('hidden'); panelRight.classList.remove('flex');
+      });
+      document.getElementById('btn-mob-right').addEventListener('click', () => {
+        panelRight.classList.toggle('hidden'); panelRight.classList.toggle('flex');
+        panelLeft.classList.add('hidden'); panelLeft.classList.remove('flex');
+      });
+
+      function handleResize() {
+        const w = stageEl.clientWidth || window.innerWidth;
+        const h = stageEl.clientHeight || window.innerHeight;
+        camera.aspect = w / Math.max(1, h);
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h, false);
+      }
+      window.addEventListener('resize', handleResize);
+      handleResize();
+
+      // Initialize into the 6-Hour Saturation Brink trace
+      loadPreset('brink');
+
+      // --------------------------------------------------------------------------
+      // ANIMATION LOOP
+      // --------------------------------------------------------------------------
+      let lastTime = performance.now();
+      function animate(now) {
+        requestAnimationFrame(animate);
+        const dt = Math.min(0.08, (now - lastTime) / 1000);
+        lastTime = now;
+        state.animClock += dt;
+
+        let dirty = false;
+
+        // Smoothly animate Spine Splints clamping / unclamping
+        if (Math.abs(state.splintBlend - state.splintTarget) > 0.002) {
+          state.splintBlend += (state.splintTarget - state.splintBlend) * Math.min(1, dt * 6.0);
+          dirty = true;
+        } else if (state.splintBlend !== state.splintTarget) {
+          state.splintBlend = state.splintTarget;
+          dirty = true;
+        }
+
+        const M = state.passes.length;
+        if (M > 0) {
+          const front = state.passes[M - 1];
+          if (Math.abs(state.frontierAnimK - front.kCurrent) > 0.003) {
+            state.frontierAnimK += (front.kCurrent - state.frontierAnimK) * Math.min(1, dt * 11.0);
+            dirty = true;
+          } else if (state.frontierAnimK !== front.kCurrent) {
+            state.frontierAnimK = front.kCurrent;
+            dirty = true;
+          }
+
+          if (state.autoRun) {
+            state.autoTimer += dt;
+            if (state.autoTimer >= 0.30) {
+              state.autoTimer = 0;
+              if (front.kCurrent === front.targetK) commitPass();
+              else stepFrontierClick();
+            }
+          }
+        }
+
+        if (dirty) {
+          rebuildWorldtube();
+          rebuildTimelineDOM();
+        } else if (state.shortcuts.length > 0) {
+          updateShortcutVisuals();
+        }
+
+        controls.update();
+        renderer.render(scene, camera);
+      }
+
+      requestAnimationFrame(animate);
+    };
+  </script>
+</body>
+</html>
